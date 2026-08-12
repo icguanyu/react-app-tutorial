@@ -15,7 +15,7 @@ const root = document.getElementById("root");
 if (!root) throw new Error("#root element not found");
 
 createRoot(root).render(
-  <BrowserRouter basename="/react-app-tutorial/">
+  <BrowserRouter basename={import.meta.env.BASE_URL}>
     <CartProvider>
       <nav className="site-nav">
         <NavLink to="/" end>
