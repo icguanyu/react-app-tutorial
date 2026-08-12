@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>React 學習專案</title>
+    <script>
+      // GitHub Pages 遇到未知路由會回傳這個 404.html
+      // 這裡把路徑編碼成 query string，再導回 index.html
+      // index.html 裡的腳本會把路徑還原，讓 BrowserRouter 正常處理
+      var pathSegmentsToKeep = 1; // /react-app-tutorial/ 算 1 段
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          "//" +
+          l.hostname +
+          (l.port ? ":" + l.port : "") +
+          l.pathname
+            .split("/")
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join("/") +
+          "/?/" +
+          l.pathname
+            .slice(1)
+            .split("/")
+            .slice(pathSegmentsToKeep)
+            .join("/")
+            .replace(/&/g, "~and~") +
+          (l.search ? "&" + l.search.slice(1).replace(/&/g, "~and~") : "") +
+          l.hash,
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
