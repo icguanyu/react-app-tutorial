@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import { fileURLToPath, URL } from 'url'
 
 export default defineConfig({
+  base: '/react-app-tutorial/',
   plugins: [react()],
   resolve: {
     alias: {
