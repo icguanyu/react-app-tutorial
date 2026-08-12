@@ -1,0 +1,154 @@
+.shop {
+  padding: 24px;
+
+  h1 {
+    margin: 0 0 20px;
+    font-size: 1.4rem;
+    color: #1a1a2e;
+  }
+
+  &__layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+}
+
+// ── 商品列表 ───────────────────────────────────────
+.product-list {
+  flex: 1;
+
+  h2 {
+    font-size: 1rem;
+    color: #555e7a;
+    margin: 0 0 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8eaf0;
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      span:first-child {
+        font-weight: 500;
+      }
+
+      span:last-child {
+        font-size: 0.85rem;
+        color: #3d5af1;
+      }
+    }
+  }
+}
+
+// ── 購物車 ────────────────────────────────────────
+.cart {
+  width: 300px;
+  background: #fff;
+  border: 1px solid #e8eaf0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  h2 {
+    font-size: 1rem;
+    margin: 0 0 12px;
+    color: #1a1a2e;
+  }
+
+  &__empty {
+    color: #aab;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2ff;
+
+    &-name {
+      font-size: 0.875rem;
+      flex: 1;
+    }
+
+    &-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      span {
+        min-width: 20px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+      }
+    }
+
+    &-subtotal {
+      font-size: 0.8rem;
+      color: #3d5af1;
+      min-width: 48px;
+      text-align: right;
+    }
+  }
+
+  &__total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 2px solid #e8eaf0;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+}
+
+// ── 共用按鈕 ──────────────────────────────────────
+.btn {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &--primary {
+    background: #3d5af1;
+    color: #fff;
+
+    &:hover {
+      background: #2d4ae0;
+    }
+  }
+
+  &--qty {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    background: #f0f2ff;
+    color: #3d5af1;
+    font-size: 1rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: #dde1fd;
+    }
+  }
+}
