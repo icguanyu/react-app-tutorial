@@ -8,7 +8,9 @@ export interface Todo {
 }
 
 export function useTodos() {
-  const [todos, setTodos] = useState<Todo[]>([
+  // 初始值用函式（lazy initializer）：只在第一次 render 執行一次
+  // 直接寫陣列的話，Date.now() / randomUUID() 每次 render 都會被呼叫（結果再被丟掉）
+  const [todos, setTodos] = useState<Todo[]>(() => [
     {
       id: crypto.randomUUID(),
       text: 'Learn React',

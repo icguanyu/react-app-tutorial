@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { createContext, useContext, useState } from "react";
-
-const CartContext = createContext(null);
+import { useState } from "react";
+import { CartContext } from "./useCart";
 
 export function CartProvider({ children }) {
   const [items, setItems] = useState([]);
@@ -43,10 +42,4 @@ export function CartProvider({ children }) {
       {children}
     </CartContext.Provider>
   );
-}
-
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart 必須在 CartProvider 內使用");
-  return ctx;
 }

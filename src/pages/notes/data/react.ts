@@ -13,6 +13,7 @@ import demoSrc from "@/demo.tsx?raw";
 import counterStoreSrc from "@/store/counterStore.ts?raw";
 import apiTestSrc from "@/pages/apitest.tsx?raw";
 import cartContextSrc from "@/context/CartContext.tsx?raw";
+import useCartSrc from "@/context/useCart.ts?raw";
 import shopProductListSrc from "@/pages/shop/ProductList.jsx?raw";
 import shopCartSummarySrc from "@/pages/shop/CartSummary.jsx?raw";
 import cartStoreSrc from "@/store/cartStore.ts?raw";
@@ -109,7 +110,7 @@ export const reactNotes: NotesConfig = {
         "`<NavLink>` 在路由符合時自動加上 `active` class，適合做選單。",
         "路由練習需要真正的網址變化，所以沒有嵌在筆記裡，用右上角「看實際頁面」開啟。",
         "`useParams()` 取得網址上的動態參數，例如 `/articles/3` 的 `id`。",
-        "`useArticle(id)` 把 **loading / error / data** 三個狀態包在一起，頁面只管顯示。",
+        "`useArticle(id)` 把 **loading / error / data** 包在一起回傳，頁面只管顯示（內部只存一份結果，loading 由它推導，見 #09）。",
         "`useEffect(..., [id])`：id 改變時重新抓資料；回傳的函式是 cleanup。",
         "**Early return**：`if (loading) return <p>載入中...</p>`，讓主要的 return 保持乾淨。",
       ],
@@ -126,7 +127,7 @@ export const reactNotes: NotesConfig = {
         { name: "useArticle.ts", code: useArticleSrc },
       ],
       pitfalls: [
-        "快速切換文章時可能出現**競態（race condition）**：舊的請求比較晚回來，會蓋掉新文章。可以在 effect 裡用 `let ignore = false`，cleanup 時設成 `true`，回來的結果若 `ignore` 就不要 set。",
+        "快速切換文章時可能出現**競態（race condition）**：舊的請求比較晚回來，會蓋掉新文章。已在 #09 用 `let ignore = false` 修正：cleanup 時設成 `true`，回來的結果若 `ignore` 就不 set。",
         "`article!` 是非空斷言，等於告訴 TypeScript「我保證不是 null」；如果判斷順序寫錯就會在執行時出錯。",
       ],
     },
@@ -289,6 +290,7 @@ function LoggedInUserInfo() {
       ],
       files: [
         { name: "CartContext.tsx", code: cartContextSrc },
+        { name: "useCart.ts", code: useCartSrc },
         { name: "ProductList.jsx", code: shopProductListSrc },
         { name: "CartSummary.jsx", code: shopCartSummarySrc },
       ],
@@ -360,6 +362,112 @@ function LoggedInUserInfo() {
       pitfalls: [
         "immer 的兩種寫法**擇一**：直接修改 `state`，或 `return` 新的 state，不能同時做。",
         "store 是模組層級的變數，所以就算 Provider 包在頁面裡，收合「實際操作」再展開，購物車內容也還在（但重新整理就沒了，沒有 persist）。",
+      ],
+    },
+    {
+      id: "eslint-fixes",
+      title: "ESLint 抓到的 3 個 Hook 問題與修正",
+      source: "hooks/、context/",
+      date: "2026-10-01",
+      tags: ["Hook", "ESLint", "效能"],
+      summary: "把 `react-hooks` 規則擴大到 `.ts` / `.tsx` 後，在既有的練習裡抓到 3 個問題，逐一修正。",
+      points: [
+        "`eslint-plugin-react-hooks` v7 除了 `rules-of-hooks`，還包含 React Compiler 的規則（`purity`、`set-state-in-effect`…），會檢查元件是否「純粹」。",
+        "**能推導的就不要存成 state**：loading 可以從「目前的結果是不是這個 id 的」算出來，不必在 effect 裡 `setLoading(true)`。",
+        "**`useState(() => 初始值)`**：初始值的計算只在第一次 render 執行。",
+        "**一個檔案只匯出元件**：Context 物件和 `useCart` 搬到另一個檔案，Fast Refresh 才能正常熱更新。",
+        "跑 `npm run lint` 就能自己檢查；三個問題修完後 lint 是 0 個錯誤。",
+      ],
+      sections: [
+        {
+          title: "一、useArticle：set-state-in-effect",
+          items: [
+            "**問題**：effect 一開始就同步呼叫 `setLoading(true)`、`setError(null)`。",
+            "**原因**：effect 是在畫面 render 完之後才跑，這時再 setState 會**立刻觸發第二次 render**（連鎖渲染）。effect 應該用來和外部系統同步，setState 放在非同步的 callback 裡。",
+            "**修法**：只存 `{ id, article, error }` 一份結果。`loading` 推導成 `result?.id !== id` — id 一變，loading 自然就是 true，不需要手動設。",
+            "**順便修好競態**：加上 `let ignore = false`，cleanup 時設成 `true`；舊 id 的請求比較晚回來時直接丟掉，不會蓋掉新文章。",
+          ],
+        },
+        {
+          title: "二、useTodos：purity",
+          items: [
+            "**問題**：`useState([{ ..., createdAt: Date.now() }])` 在 render 期間呼叫了不純的函式。",
+            "**原因**：傳給 `useState` 的值**每次 render 都會被計算**，只是第一次之後被丟掉。`Date.now()`、`crypto.randomUUID()` 每次結果都不同，屬於不純的呼叫，也白白浪費效能。",
+            "**修法**：改成 lazy initializer `useState(() => [...])`，React 只在第一次 render 呼叫這個函式。",
+          ],
+        },
+        {
+          title: "三、CartContext：only-export-components",
+          items: [
+            "**問題**：`CartContext.tsx` 同時匯出 `CartProvider`（元件）和 `useCart`（一般函式）。",
+            "**原因**：Vite 的 Fast Refresh 只有在「檔案只匯出元件」時才能保留 state 做熱更新；混了非元件就只能整頁重新載入。",
+            "**修法**：新增 `context/useCart.ts` 放 `CartContext` 物件與 `useCart()`；`CartContext.tsx` 只匯出 `CartProvider`。使用端改成 `import { useCart } from \"context/useCart\"`。",
+            "沒有取名 `cartContext.ts`：Windows 的檔名不分大小寫，會跟 `CartContext.tsx` 撞名。",
+          ],
+        },
+      ],
+      compare: [
+        ["從 state 推導 loading", "`computed(() => result.value?.id !== id)`"],
+        ["cleanup 設 `ignore = true`", "`onWatcherCleanup()`（Vue 3.5+）"],
+        ["`useState(() => 初始值)`", "`ref()` 的初始值本來就只算一次（setup 只執行一次）"],
+      ],
+      files: [
+        {
+          name: "修正前-useArticle.ts",
+          code: `const [article, setArticle] = useState<Article | null>(null)
+const [loading, setLoading] = useState(true)
+const [error, setError] = useState<string | null>(null)
+
+useEffect(() => {
+  setLoading(true) // ❌ effect 本體同步 setState
+  setError(null)
+
+  fetchArticle(id)
+    .then((data) => {
+      if (!data) setError(\`找不到文章（id: \${id}）\`)
+      else setArticle(data) // ❌ 舊請求晚回來會蓋掉新文章
+    })
+    .finally(() => setLoading(false))
+
+  return () => {
+    setArticle(null)
+  }
+}, [id])`,
+        },
+        { name: "修正後-useArticle.ts", code: useArticleSrc },
+        {
+          name: "修正前-useTodos.ts",
+          code: `// ❌ 每次 render 都會執行 Date.now() / randomUUID()
+const [todos, setTodos] = useState<Todo[]>([
+  {
+    id: crypto.randomUUID(),
+    text: 'Learn React',
+    completed: true,
+    createdAt: Date.now(),
+  }
+])`,
+        },
+        { name: "修正後-useTodos.ts", code: useTodosSrc },
+        {
+          name: "修正前-CartContext.tsx",
+          code: `const CartContext = createContext(null);
+
+export function CartProvider({ children }) { /* ... */ }
+
+// ❌ 和元件放在同一個檔案匯出
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error("useCart 必須在 CartProvider 內使用");
+  return ctx;
+}`,
+        },
+        { name: "修正後-useCart.ts", code: useCartSrc },
+        { name: "修正後-CartContext.tsx", code: cartContextSrc },
+      ],
+      pitfalls: [
+        "不是所有 effect 裡的 setState 都違規：在 `.then()`、事件、計時器等**非同步 callback** 裡 setState 是正常用法。",
+        "`useState(computeInitial())` 和 `useState(computeInitial)` 不一樣：前者每次 render 都執行，後者只在第一次。",
+        "這些規則只是 lint，不修也能跑；但它們抓到的通常是效能問題或之後很難查的 bug。",
       ],
     },
   ],

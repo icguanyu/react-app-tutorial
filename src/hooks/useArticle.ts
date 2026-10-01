@@ -26,37 +26,41 @@ function fetchArticle(id: string): Promise<Article | null> {
 // export function useArticle  ↔  export function useArticle
 // ─────────────────────────────────────────────
 export function useArticle(id: string) {
-  // Vue: const article = ref<Article | null>(null)
-  const [article, setArticle] = useState<Article | null>(null)
-
-  // Vue: const loading = ref(true)
-  const [loading, setLoading] = useState(true)
-
-  // Vue: const error = ref<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  // 只存「哪個 id 的結果」，loading / article / error 都從它推導
+  // Vue: const result = ref<Result | null>(null)
+  const [result, setResult] = useState<{
+    id: string
+    article: Article | null
+    error: string | null
+  } | null>(null)
 
   useEffect(() => {
     // Vue: watch(id, async (newId) => { ... }, { immediate: true })
     // useEffect 的 deps array [id] ↔ watch 的第一個參數
     // { immediate: true } ↔ 不寫 immediate 時 useEffect 預設就會立即執行
 
-    setLoading(true)
-    setError(null)
+    // 不在 effect 本體同步 setLoading(true)：id 一變，loading 就自動由下面推導成 true
+    let ignore = false
 
-    fetchArticle(id)
-      .then((data) => {
-        if (!data) setError(`找不到文章（id: ${id}）`)
-        else setArticle(data)
-      })
-      .finally(() => setLoading(false))
+    fetchArticle(id).then((data) => {
+      // 已經換到別的 id（或元件卸載），這個舊結果就丟掉，避免蓋掉新文章
+      if (ignore) return
+      setResult({ id, article: data, error: data ? null : `找不到文章（id: ${id}）` })
+    })
 
-    // Vue: onUnmounted(() => controller.abort())
-    // React cleanup function ↔ Vue onUnmounted
+    // Vue: onWatcherCleanup(() => { ignore = true })
+    // React cleanup function：id 改變或卸載時執行
     return () => {
-      setArticle(null)
+      ignore = true
     }
   }, [id]) // [id] ↔ watch 的第一個參數
 
-  // Vue: return { article, loading, error }
-  return { article, loading, error }
+  // Vue: const loading = computed(() => result.value?.id !== id)
+  const current = result?.id === id ? result : null
+
+  return {
+    article: current?.article ?? null,
+    loading: current === null,
+    error: current?.error ?? null,
+  }
 }

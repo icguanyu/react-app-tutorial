@@ -5,7 +5,7 @@ import TodoItem from "./components/TodoItem";
 import TodoFilter from "./components/TodoFilter";
 import type { FilterType } from "./components/TodoFilter";
 import "./TodoApp.scss";
-import { useCart } from "./context/CartContext";
+import { useCart } from "./context/useCart";
 
 export default function App() {
   const { todos, addTodo, toggleTodo, deleteTodo, editTodo, clearCompleted } =

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useCart } from "../../context/CartContext";
+import { useCart } from "../../context/useCart";
 
 export default function CartSummary() {
   const { items, increment, decrement, total } = useCart();

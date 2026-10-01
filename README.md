@@ -1,12 +1,14 @@
 # React 學習專案
 
-Vue 3 開發者轉學 React 的實作練習專案，每個頁面聚焦一組核心概念，並附 Vue 3 對照說明。
+Vue 3 開發者轉學 React 的實作練習專案，每個單元聚焦一組核心概念，並附 Vue 3 對照說明。
+同時收錄 Go、Python 的練習筆記，所有練習集中在同一個網站查看。
 
 ## 啟動
 
 ```bash
 npm install
-npm run dev
+npm run dev    # 開發伺服器
+npm run lint   # ESLint（含 React Hooks 規則）
 ```
 
 ---
@@ -74,11 +76,13 @@ npm run dev
 | 條件渲染 early return | `v-if / v-else` |
 | 巢狀路由設定（Route children） | `router` 的 `children` 陣列 |
 
+**重點：** `useArticle` 只存一份 `{ id, article, error }` 結果，loading 由它推導；cleanup 設 `ignore = true` 避免舊請求蓋掉新文章（競態）。
+
 ---
 
 ### 單元五 — 跨組件狀態：useContext 購物車
 
-**檔案：** `src/pages/shop/` `src/context/CartContext.tsx`
+**檔案：** `src/pages/shop/` `src/context/CartContext.tsx` `src/context/useCart.ts`
 
 | React 概念 | Vue 3 對照 |
 |---|---|
@@ -126,6 +130,18 @@ npm run dev
 
 ---
 
+### 單元八 — ESLint 抓到的 Hook 問題與修正
+
+**檔案：** `src/hooks/useArticle.ts` `src/hooks/useTodos.ts` `src/context/useCart.ts`
+
+| ESLint 規則 | 問題 | 修法 |
+|---|---|---|
+| `react-hooks/set-state-in-effect` | effect 本體同步 `setLoading(true)`，造成連鎖 render | loading 改由結果推導，setState 只在非同步 callback |
+| `react-hooks/purity` | `useState` 初始值呼叫 `Date.now()` | lazy initializer `useState(() => ...)` |
+| `react-refresh/only-export-components` | 同一檔案匯出元件與 `useCart` | `useCart` 與 Context 物件搬到 `useCart.ts` |
+
+---
+
 ### 練習筆記 `/react` `/go` `/python`
 
 **檔案：** `src/pages/notes/`
@@ -138,15 +154,24 @@ npm run dev
 
 ---
 
+## ESLint 設定
+
+- `.js` / `.jsx`：`@eslint/js` recommended + React Hooks + react-refresh
+- `.ts` / `.tsx`：只啟用 React Hooks 與 react-refresh 規則，型別與未定義變數交給 `tsc`
+- typescript-eslint 尚不支援 TypeScript 7，因此 TS 檔改用 `@babel/eslint-parser` 解析（只取 AST，scope 分析由 ESLint 10 處理）；`package.json` 的 `overrides` 用來放寬它對 ESLint 版本的 peer 限制
+
+---
+
 ## 技術棧
 
 | 項目 | 版本 |
 |---|---|
 | React | 19 |
-| TypeScript | 5 |
-| Vite | 6 |
-| React Router | 6 |
+| TypeScript | 7 |
+| Vite | 8 |
+| React Router | 7 |
 | Zustand | 5 |
 | Redux Toolkit | 2 |
 | React Redux | 9 |
+| ESLint | 10 |
 | SCSS | — |
