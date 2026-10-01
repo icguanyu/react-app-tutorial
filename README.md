@@ -13,7 +13,9 @@ npm run dev
 
 ## 教學單元總覽
 
-### 單元一 — 首頁 Todo App `/`
+所有單元都整理在 React 筆記 `/react`，除了巢狀路由（需要真正的網址，保留在 `/articles`），其餘練習頁面都可以在筆記內展開「實際操作」直接使用。
+
+### 單元一 — Todo App
 
 **檔案：** `src/App.tsx` `src/hooks/useTodos.ts` `src/components/`
 
@@ -30,7 +32,7 @@ npm run dev
 
 ---
 
-### 單元二 — Demo：Zustand Counter & Hook 規則 `/demo`
+### 單元二 — Zustand Counter & Hook 規則
 
 **檔案：** `src/demo.tsx` `src/store/counterStore.ts`
 
@@ -45,7 +47,7 @@ npm run dev
 
 ---
 
-### 單元三 — 生命週期 & API 呼叫 `/apitest`
+### 單元三 — 生命週期 & API 呼叫
 
 **檔案：** `src/pages/apitest.tsx`
 
@@ -74,7 +76,7 @@ npm run dev
 
 ---
 
-### 單元五 — 跨組件狀態：useContext 購物車 `/shop`
+### 單元五 — 跨組件狀態：useContext 購物車
 
 **檔案：** `src/pages/shop/` `src/context/CartContext.tsx`
 
@@ -89,7 +91,7 @@ npm run dev
 
 ---
 
-### 單元六 — 全域狀態：Zustand 購物車 `/shop-zustand`
+### 單元六 — 全域狀態：Zustand 購物車
 
 **檔案：** `src/pages/shop-zustand/` `src/store/cartStore.ts`
 
@@ -106,7 +108,7 @@ npm run dev
 
 ---
 
-### 單元七 — 全域狀態：Redux 購物車 `/shop-redux`
+### 單元七 — 全域狀態：Redux 購物車
 
 **檔案：** `src/pages/shop-redux/` `src/store/cartSlice.js` `src/store/reduxStore.js`
 
@@ -124,11 +126,15 @@ npm run dev
 
 ---
 
-### 概念索引頁 `/concepts`
+### 練習筆記 `/react` `/go` `/python`
 
-**檔案：** `src/pages/concepts/index.jsx`
+**檔案：** `src/pages/notes/`
 
-以卡片方式整理本專案所有 React 概念，每個概念附 Vue 3 對照，方便快速查閱。
+把 React、Go、Python 的練習整理成筆記：重點、程式碼、執行結果、小提醒，可搜尋與依標籤篩選。
+
+- React 筆記的程式碼直接讀取本專案原始檔（Vite `?raw`），並附 Vue 3 對照與實際頁面連結（取代原本的概念索引頁 `/concepts`）
+- Go / Python 筆記整理自 `go-training/`、`python-training/` 的練習
+- 新增練習：在 `src/pages/notes/data/*.ts` 的陣列加一個物件即可
 
 ---
 
